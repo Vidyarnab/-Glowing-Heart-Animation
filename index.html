@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Heart 3D Animation</title>
+  <title>Heart 3D Coding</title>
   <style>
     * {
       margin: 0;
@@ -42,10 +42,9 @@
     window.addEventListener("resize", () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
-      generateCleanHeart();
+      buildHeartLayout();
     });
 
-    // Reel ke exact phrases
     const phrases = [
       "Sirf Tum ❤️",
       "You Are My Happiness",
@@ -83,15 +82,14 @@
       "You Own My Heart"
     ];
 
-    // Heart mathematical formula
-    function insideHeart(x, y) {
-      const nx = x;
-      const ny = -y;
-      const a = nx * nx + ny * ny - 1;
-      return (a * a * a - nx * nx * ny * ny * ny) <= 0;
+    // Standard Heart Curve: x = 16*sin^3(t), y = -(13*cos(t) - 5*cos(2t) - 2*cos(3t) - cos(4t))
+    function getHeartEdge(t, scale) {
+      const x = 16 * Math.pow(Math.sin(t), 3) * scale;
+      const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * scale;
+      return { x, y };
     }
 
-    class PhraseSlot {
+    class TextItem {
       constructor(text, x, y, order) {
         this.text = text;
         this.x = x;
@@ -99,106 +97,105 @@
         this.order = order;
       }
 
-      draw(progress, beat) {
-        if (progress < this.order) return;
+      draw(step, beat) {
+        if (step < this.order) return;
 
+        // Pulse anchored from heart center
         const posX = width / 2 + this.x * beat;
-        const posY = height / 2 + this.y * beat;
+        const posY = height / 2 + (this.y - 15) * beat;
 
         ctx.save();
         ctx.font = "bold 8.5px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        // Red neon glow shadow
-        ctx.shadowColor = "#ff001e";
-        ctx.shadowBlur = 8;
-        ctx.fillStyle = "#ff1e2b";
+        // Neon Red Shadow & Glow
+        ctx.shadowColor = "#ff001a";
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = "#ff1f2d";
         ctx.fillText(this.text, posX, posY);
 
+        // Core text highlights
         ctx.shadowBlur = 0;
-        ctx.fillStyle = "#ff5964";
+        ctx.fillStyle = "#ff5762";
         ctx.fillText(this.text, posX, posY);
 
         ctx.restore();
       }
     }
 
-    let heartSlots = [];
+    let items = [];
     let totalItems = 0;
 
-    function generateCleanHeart() {
-      heartSlots = [];
-      const rows = 26;
-      const colStep = 75; // Overlapping rokne ke liye clean gap
+    function buildHeartLayout() {
+      items = [];
+      const baseScale = Math.min(width, height) / 36;
 
-      const heartScale = Math.min(width, height) * 0.44;
-      let phraseIndex = 0;
-      let orderIndex = 0;
+      // 8 Concentric Heart Rings - Outer to Inner Core
+      const rings = [
+        { scale: baseScale * 1.00, count: 28, stepStart: 0 },
+        { scale: baseScale * 0.88, count: 24, stepStart: 0.1 },
+        { scale: baseScale * 0.76, count: 20, stepStart: 0 },
+        { scale: baseScale * 0.64, count: 16, stepStart: 0.15 },
+        { scale: baseScale * 0.52, count: 12, stepStart: 0 },
+        { scale: baseScale * 0.40, count: 9,  stepStart: 0.2 },
+        { scale: baseScale * 0.26, count: 6,  stepStart: 0 },
+        { scale: baseScale * 0.12, count: 2,  stepStart: 0 }
+      ];
 
-      for (let r = 0; r < rows; r++) {
-        const yNorm = 1.25 - (r / (rows - 1)) * 2.5;
-        const yPx = -yNorm * heartScale;
+      let phraseIdx = 0;
+      let order = 0;
 
-        let minX = 0;
-        let maxX = 0;
-        for (let xNorm = -1.6; xNorm <= 1.6; xNorm += 0.02) {
-          if (insideHeart(xNorm, yNorm)) {
-            if (minX === 0 || xNorm < minX) minX = xNorm;
-            if (maxX === 0 || xNorm > maxX) maxX = xNorm;
-          }
+      rings.forEach(ring => {
+        for (let i = 0; i < ring.count; i++) {
+          const t = (i / ring.count) * Math.PI * 2 + ring.stepStart;
+          const pos = getHeartEdge(t, ring.scale);
+          const txt = phrases[phraseIdx % phrases.length];
+          phraseIdx++;
+
+          items.push(new TextItem(txt, pos.x, pos.y, order));
+          order++;
         }
+      });
 
-        if (minX !== 0 && maxX !== 0 && maxX > minX) {
-          const widthPx = (maxX - minX) * heartScale;
-          const countInRow = Math.max(1, Math.floor(widthPx / colStep));
-
-          for (let c = 0; c < countInRow; c++) {
-            const frac = countInRow === 1 ? 0.5 : (c + 0.5) / countInRow;
-            const xNorm = minX + frac * (maxX - minX);
-            const xPx = xNorm * heartScale;
-
-            if (insideHeart(xNorm, yNorm)) {
-              const text = phrases[phraseIndex % phrases.length];
-              phraseIndex++;
-              heartSlots.push(new PhraseSlot(text, xPx, yPx, orderIndex));
-              orderIndex++;
-            }
-          }
-        }
+      // Sort top-to-bottom taaki reel ki tarah shuruat se ant tak structure banta dikhe
+      items.sort((a, b) => a.y - b.y);
+      for (let i = 0; i < items.length; i++) {
+        items[i].order = i;
       }
 
-      totalItems = heartSlots.length;
+      totalItems = items.length;
     }
 
-    generateCleanHeart();
+    buildHeartLayout();
 
-    let stepCounter = 0;
-    let pulseTime = 0;
+    let currentStep = 0;
+    let beatTime = 0;
 
-    function render() {
+    function animate() {
       ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, width, height);
 
-      // Slow speed animation (ek-ek sentence dikhega)
-      if (stepCounter < totalItems) {
-        stepCounter += 0.28;
+      // Slow revealing speed: har frame par aaram se ek-ek sentence appear hoga
+      if (currentStep < totalItems) {
+        currentStep += 0.25;
       }
 
+      // Full banne ke baad heartbeat pulse
       let beat = 1;
-      if (stepCounter >= totalItems) {
-        pulseTime += 0.04;
-        beat = 1 + Math.sin(pulseTime) * 0.025;
+      if (currentStep >= totalItems) {
+        beatTime += 0.045;
+        beat = 1 + Math.sin(beatTime) * 0.03;
       }
 
-      for (let i = 0; i < heartSlots.length; i++) {
-        heartSlots[i].draw(stepCounter, beat);
+      for (let i = 0; i < items.length; i++) {
+        items[i].draw(currentStep, beat);
       }
 
-      requestAnimationFrame(render);
+      requestAnimationFrame(animate);
     }
 
-    render();
+    animate();
   </script>
 </body>
 </html>
