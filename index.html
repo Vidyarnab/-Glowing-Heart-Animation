@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>I Love You Sentences Heart</title>
+  <title>Heart 3D Coding</title>
   <style>
     * {
       margin: 0;
@@ -42,139 +42,157 @@
     window.addEventListener("resize", () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
-      generateSentences();
+      initPhrases();
     });
 
-    // 12 alag-alag languages ke complete sentences
-    const languages = [
-      "I Love You",
-      "मैं तुमसे प्यार करता हूँ",
-      "Je t'aime",
-      "Te amo",
-      "Ti amo",
-      "Ich liebe dich",
-      "愛してる",
-      "사랑해",
-      "Я тебя люблю",
-      "أحبك",
-      "আমি তোমাকে ভালোবাসি",
-      "Wo ai ni"
+    // Exact phrases from the video screenshot
+    const phrasesList = [
+      "You Are My Happiness",
+      "My Princess",
+      "Mera Sab Kuch",
+      "My Beautiful Babu",
+      "Chota Don ❤️",
+      "Mera Sab Kuch",
+      "Babu Meri Duniya",
+      "My Cute Don",
+      "Meri Khushi",
+      "You Are My Everything",
+      "Mera Sukoon",
+      "My Sweetheart",
+      "Meri Jaan",
+      "I love you Babu ❤️",
+      "My Beautiful Babu",
+      "Hamesha Tumhara",
+      "Meri Pagli",
+      "Jaan Se Pyari",
+      "Meri Dhadkan",
+      "You Are My Happiness",
+      "Meri Pagli",
+      "Forever And Always",
+      "My Babu",
+      "I Miss You Babu",
+      "Sirf Tum ❤️",
+      "Forever And Always",
+      "My Sweetheart",
+      "My Babu",
+      "You Complete Me",
+      "Mera Pyaara Babu",
+      "Mera Sukoon",
+      "Tum Meri Zindagi Ho",
+      "Endless Love",
+      "Only You Babu",
+      "My One And Only",
+      "I Choose You Always",
+      "Forever My Love",
+      "You Own My Heart"
     ];
 
-    // Mathematical Heart coordinates
-    function getHeartCoords(t, scale) {
+    // Parametric Heart Formula
+    function getHeartPoint(t, scale) {
       const x = 16 * Math.pow(Math.sin(t), 3);
       const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
       return { x: x * scale, y: y * scale };
     }
 
-    // Tangent angle taaki sentences curve ke shape ke sath naturally turn hon
-    function getTangentAngle(t) {
-      const delta = 0.001;
-      const p1 = getHeartCoords(t - delta, 1);
-      const p2 = getHeartCoords(t + delta, 1);
-      return Math.atan2(p2.y - p1.y, p2.x - p1.x);
-    }
-
-    class SentenceSpark {
-      constructor(text, t, scale, fontSize) {
+    class TextElement {
+      constructor(text, x, y, size, order) {
         this.text = text;
-        this.t = t;
-        this.scale = scale;
-        this.fontSize = fontSize;
-        this.angle = getTangentAngle(t);
-
-        // Star twinkle properties
-        this.twinkleOffset = Math.random() * Math.PI * 2;
-        this.twinkleRate = 0.04 + Math.random() * 0.05;
-        this.isHighlight = Math.random() < 0.35;
+        this.x = x;
+        this.y = y;
+        this.size = size;
+        this.order = order;
       }
 
-      update() {
-        this.twinkleOffset += this.twinkleRate;
-      }
+      draw(currentStep, beat) {
+        if (currentStep < this.order) return;
 
-      draw(beat) {
-        const pt = getHeartCoords(this.t, this.scale * beat);
-        const posX = width / 2 + pt.x;
-        const posY = height / 2 + pt.y;
-
-        // Twinkle calculation
-        const pulse = Math.sin(this.twinkleOffset);
-        let alpha = 0.45 + (pulse + 1) * 0.25;
-        let glow = 4 + (pulse + 1) * 8;
-        let color = "#ff2d55";
-
-        if (this.isHighlight && pulse > 0.5) {
-          color = "#ffffff";
-          glow = 14;
-          alpha = 1;
-        }
+        const posX = width / 2 + this.x * beat;
+        const posY = height / 2 + this.y * beat;
 
         ctx.save();
-        ctx.translate(posX, posY);
-        ctx.rotate(this.angle);
-
-        ctx.font = `600 ${this.fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
+        ctx.font = `bold ${this.size}px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillStyle = color;
-        ctx.globalAlpha = alpha;
-        ctx.shadowColor = "#ff0055";
-        ctx.shadowBlur = glow;
 
-        ctx.fillText(this.text, 0, 0);
+        // Intense Red Neon Glow
+        ctx.shadowColor = "#ff0015";
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = "#ff1e27";
+        ctx.fillText(this.text, posX, posY);
+
+        // Center brightness
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#ff4d52";
+        ctx.fillText(this.text, posX, posY);
+
         ctx.restore();
       }
     }
 
-    let sentenceList = [];
+    let allElements = [];
+    let totalCount = 0;
 
-    function generateSentences() {
-      sentenceList = [];
-      const baseScale = Math.min(width, height) / 32;
+    function initPhrases() {
+      allElements = [];
+      const baseScale = Math.min(width, height) / 34;
 
-      // Outer layers aur inner layers taaki heart bada aur filled dikhe
-      const rings = [
-        { scale: baseScale * 1.05, count: 26, fontSize: 13 },
-        { scale: baseScale * 0.90, count: 22, fontSize: 12 },
-        { scale: baseScale * 0.74, count: 18, fontSize: 11 },
-        { scale: baseScale * 0.58, count: 14, fontSize: 10 },
-        { scale: baseScale * 0.40, count: 10, fontSize: 9 }
+      // Layers matching the filled density of the reel
+      const layers = [
+        { scale: baseScale * 1.05, step: 0.22, size: 10.5 },
+        { scale: baseScale * 0.90, step: 0.25, size: 10 },
+        { scale: baseScale * 0.75, step: 0.29, size: 9.5 },
+        { scale: baseScale * 0.60, step: 0.35, size: 9 },
+        { scale: baseScale * 0.45, step: 0.42, size: 8.5 },
+        { scale: baseScale * 0.30, step: 0.55, size: 8 },
+        { scale: baseScale * 0.15, step: 0.80, size: 7.5 }
       ];
 
-      let textIndex = 0;
-      rings.forEach(ring => {
-        for (let i = 0; i < ring.count; i++) {
-          const t = (i / ring.count) * Math.PI * 2;
-          const phrase = languages[textIndex % languages.length];
-          textIndex++;
+      let order = 0;
+      let phraseIdx = 0;
 
-          sentenceList.push(new SentenceSpark(phrase, t, ring.scale, ring.fontSize));
+      layers.forEach(layer => {
+        for (let t = -Math.PI; t < Math.PI; t += layer.step) {
+          const pt = getHeartPoint(t, layer.scale);
+          const txt = phrasesList[phraseIdx % phrasesList.length];
+          phraseIdx++;
+
+          allElements.push(new TextElement(txt, pt.x, pt.y, layer.size, order));
+          order++;
         }
       });
+
+      totalCount = allElements.length;
     }
 
-    generateSentences();
+    initPhrases();
 
-    let beatTime = 0;
+    let step = 0;
+    let pulseTime = 0;
 
-    function render() {
+    function animate() {
       ctx.fillStyle = "#000000";
       ctx.fillRect(0, 0, width, height);
 
-      beatTime += 0.04;
-      const beat = 1 + Math.sin(beatTime) * 0.035;
-
-      for (let i = 0; i < sentenceList.length; i++) {
-        sentenceList[i].update();
-        sentenceList[i].draw(beat);
+      // Appearing speed
+      if (step < totalCount) {
+        step += 0.8;
       }
 
-      requestAnimationFrame(render);
+      // Heartbeat pulse after full formation
+      let beat = 1;
+      if (step >= totalCount) {
+        pulseTime += 0.05;
+        beat = 1 + Math.sin(pulseTime) * 0.03;
+      }
+
+      for (let i = 0; i < allElements.length; i++) {
+        allElements[i].draw(step, beat);
+      }
+
+      requestAnimationFrame(animate);
     }
 
-    render();
+    animate();
   </script>
 </body>
 </html>
