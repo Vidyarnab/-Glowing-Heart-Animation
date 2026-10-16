@@ -1,231 +1,103 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Love ❤️</title>
-
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    background: #000;
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: Arial, sans-serif;
-}
-
-.scene {
-    width: 100%;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    perspective: 1000px;
-}
-
-.heart {
-    position: relative;
-    width: 360px;
-    height: 330px;
-    transform-style: preserve-3d;
-    animation: heartbeat 2s infinite ease-in-out,
-               rotateHeart 12s infinite ease-in-out;
-}
-
-.word {
-    position: absolute;
-    color: #ff3028;
-    font-weight: bold;
-    white-space: nowrap;
-    text-align: center;
-    text-shadow:
-        0 0 5px #ff1717,
-        0 0 10px #ff0808,
-        0 0 20px rgba(255, 0, 0, 0.7);
-    animation: glow 2s infinite alternate;
-    transform: translate(-50%, -50%);
-}
-
-@keyframes heartbeat {
-    0%, 100% { scale: 1; }
-    25% { scale: 1.04; }
-    40% { scale: 0.99; }
-    60% { scale: 1.06; }
-}
-
-@keyframes rotateHeart {
-    0%, 100% { transform: rotateY(-10deg) rotateX(4deg); }
-    50% { transform: rotateY(10deg) rotateX(-4deg); }
-}
-
-@keyframes glow {
-    from {
-        opacity: 0.7;
-        text-shadow: 0 0 5px #ff1717, 0 0 10px #ff0000;
-    }
-    to {
-        opacity: 1;
-        text-shadow: 0 0 8px #ff2222, 0 0 20px #ff0000;
-    }
-}
-
-.title {
-    position: fixed;
-    bottom: 25px;
-    width: 100%;
-    text-align: center;
-    color: #ff4545;
-    font-size: 15px;
-    letter-spacing: 2px;
-    text-shadow: 0 0 10px red;
-}
-
-@media (max-width: 500px) {
-    .heart {
-        transform: scale(0.85);
-    }
-
-    .title {
-        font-size: 12px;
-    }
-}
-</style>
-</head>
-
-<body>
-
-<div class="scene">
-    <div class="heart" id="heart"></div>
-</div>
-
-<div class="title">❤️ FOREVER AND ALWAYS ❤️</div>
-
 <script>
 const heart = document.getElementById("heart");
+heart.innerHTML = "";
 
 const messages = [
-    "My Princess",
-    "My Beautiful Babu",
-    "Meri Jaan ❤️",
-    "My Cute Don",
-    "You Are My Happiness",
-    "Mera Sukoon",
-    "I Love You Babu ❤️",
-    "My Sweetheart",
-    "Meri Khushi",
-    "My Favourite Person",
-    "Forever And Always",
-    "My One And Only",
-    "Meri Duniya",
-    "Sift Tum ❤️",
-    "You Are My Everything",
-    "Mera Pyaara Babu",
-    "Meri Dh adkan",
-    "Chota Don ❤️",
-    "Endless Love",
-    "My Babu",
-    "Only You Babu",
-    "Tum Meri Zindagi Ho",
-    "Mera Sab Kuch",
-    "I Miss You Babu",
-    "My Love ❤️",
-    "Jaan Se Pyari",
-    "Meri Pagli",
-    "You Complete Me",
-    "My Everything",
-    "Forever My Love",
-    "My Happiness",
-    "Love You Chota Don",
-    "Meri Favourite",
-    "Hamesha Tumhara",
-    "My Princess ❤️",
-    "Babu Meri Duniya",
-    "I Choose You",
-    "You Own My Heart",
-    "Mera Bachha ❤️",
-    "Meri Jaan",
-    "My Sunshine",
-    "Endless Together",
-    "My Soulmate",
-    "Only Mine ❤️",
-    "My Forever"
+  "Sift Tum ❤️",
+  "My Babu",
+  "My One And Only",
+  "Mera Sukoon",
+  "Jaan Se Pyari",
+  "Endless Love",
+  "Meri Jaan",
+  "Meri Favourite Person",
+  "I Love You Babu ❤️",
+  "My Princess",
+  "My Beautiful Babu",
+  "Mera Sab Kuch",
+  "My Cute Don",
+  "You Are My Happiness",
+  "Mera Pyaara Babu",
+  "My Sweetheart",
+  "Meri Khushi",
+  "Forever And Always",
+  "Babu Meri Duniya",
+  "You Are My Everything",
+  "My Love ❤️",
+  "Tum Meri Zindagi Ho",
+  "Meri Dhadkan",
+  "Chota Don ❤️",
+  "My Favourite Person",
+  "Only You Babu",
+  "I Miss You Babu",
+  "My Beautiful Babu",
+  "Meri Pagli",
+  "You Complete Me",
+  "My Princess ❤️",
+  "Forever My Love",
+  "My Babu",
+  "Love You Chota Don",
+  "My Everything",
+  "Hamesha Tumhara",
+  "I Choose You",
+  "You Own My Heart",
+  "Meri Jaan ❤️",
+  "My Soulmate",
+  "My Forever",
+  "Only Mine ❤️",
+  "Forever And Always",
+  "My Sweetheart",
+  "My Babu"
 ];
 
-// Heart equation creates a heart-shaped outline and filled interior.
-function heartPoint(t, scale = 1) {
-    const x = 16 * Math.pow(Math.sin(t), 3);
-    const y = 13 * Math.cos(t)
-            - 5 * Math.cos(2 * t)
-            - 2 * Math.cos(3 * t)
-            - Math.cos(4 * t);
+// Heart shape formula
+function heartPoint(t, scale) {
+  const x = 16 * Math.pow(Math.sin(t), 3);
+  const y = 13 * Math.cos(t)
+          - 5 * Math.cos(2 * t)
+          - 2 * Math.cos(3 * t)
+          - Math.cos(4 * t);
 
-    return {
-        x: x * scale,
-        y: -y * scale
-    };
+  return {
+    x: x * scale,
+    y: -y * scale
+  };
 }
 
-const points = [];
+// Create evenly spaced horizontal rows
+const rows = 19;
+const maxWidth = 310;
+const maxHeight = 250;
 
-// Fill the heart with points.
-for (let i = 0; i < 150; i++) {
-    const t = Math.random() * Math.PI * 2;
-    const scale = Math.sqrt(Math.random());
-    points.push(heartPoint(t, scale));
+for (let row = 0; row < rows; row++) {
+  const y = -1 + (row / (rows - 1)) * 2;
+
+  // Heart width at this height
+  const widthFactor = Math.sqrt(Math.max(0, 1 - y * y));
+  const count = Math.max(1, Math.round(widthFactor * 5));
+
+  for (let col = 0; col < count; col++) {
+    const span = document.createElement("span");
+    span.className = "word";
+
+    const index = (row * 3 + col * 7) % messages.length;
+    span.textContent = messages[index];
+
+    const xPos = count === 1
+      ? 0
+      : (col / (count - 1) - 0.5) * widthFactor * maxWidth;
+
+    const yPos = y * maxHeight / 2;
+
+    span.style.left = `calc(50% + ${xPos}px)`;
+    span.style.top = `calc(50% + ${yPos}px)`;
+    span.style.fontSize = "10px";
+    span.style.letterSpacing = "0.3px";
+    span.style.lineHeight = "1.2";
+    span.style.whiteSpace = "nowrap";
+    span.style.animationDelay = `${Math.random() * 2}s`;
+
+    heart.appendChild(span);
+  }
 }
-
-// Sort by height to create a recognizable heart.
-points.sort((a, b) => a.y - b.y);
-
-points.forEach((point, i) => {
-    const span = document.createElement("span");
-    span.className = "word";
-    span.textContent = messages[i % messages.length];
-
-    const x = 180 + point.x * 8.3;
-    const y = 145 + point.y * 8.3;
-
-    span.style.left = x + "px";
-    span.style.top = y + "px";
-    span.style.fontSize = (9 + Math.random() * 4) + "px";
-    span.style.animationDelay = (Math.random() * 2) + "s";
-
-    // Depth effect
-    span.style.transform =
-        `translate(-50%, -50%) translateZ(${Math.random() * 35}px)`;
-
-    heart.appendChild(span);
-});
-
-// Add a few larger romantic messages.
-const highlights = [
-    { text: "I Love You Babu ❤️", x: 180, y: 145, size: 14 },
-    { text: "My Beautiful Babu", x: 180, y: 175, size: 13 },
-    { text: "Forever And Always", x: 180, y: 205, size: 12 },
-    { text: "My Princess ❤️", x: 180, y: 235, size: 12 }
-];
-
-highlights.forEach(item => {
-    const span = document.createElement("span");
-    span.className = "word";
-    span.textContent = item.text;
-    span.style.left = item.x + "px";
-    span.style.top = item.y + "px";
-    span.style.fontSize = item.size + "px";
-    span.style.color = "#ff514a";
-    span.style.zIndex = "10";
-    heart.appendChild(span);
-});
 </script>
-
-</body>
-</html>
