@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Exact Python Heart</title>
+  <title>Love Heart Animation</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      font-family: Arial, sans-serif;
     }
     body {
-      background: #000000;
+      background: #060208;
       overflow: hidden;
       height: 100vh;
       width: 100vw;
@@ -42,161 +42,156 @@
     window.addEventListener("resize", () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
-      buildExactHeart();
+      buildLayout();
     });
 
-    // Reel ke exact phrases
-    const phrases = [
-      "Sirf Tum ❤️",
-      "You Are My Happiness",
+    // Exact video phrases
+    const PHRASES = [
+      "I love you Babu ❤️",
       "My Babu",
-      "Hamesha Tumhara",
-      "My Princess",
-      "Mera Sab Kuch",
-      "My One And Only",
-      "Endless Love",
-      "My Beautiful Babu",
-      "Chota Don ❤️",
-      "Mera Sukoon",
-      "Meri Favourite Person",
-      "Mera Sab Kuch",
-      "Babu Meri Duniya",
-      "Jaan Se Pyari",
-      "I Love You Babu ❤️",
-      "My Cute Don",
-      "Meri Khushi",
       "Meri Jaan",
-      "You Are My Everything",
-      "Meri Dhadkan",
-      "Only You Babu",
-      "Babu + Me = Forever",
-      "I Choose You Always",
-      "Love You Chota Don",
-      "My Love ❤️",
-      "You Complete Me",
       "Mera Pyaara Babu",
-      "Tum Meri Zindagi Ho",
-      "Meri Pagli",
-      "Forever And Always",
-      "My Sweetheart",
+      "My Cute Don",
+      "My Heart is Yours",
+      "Sirf Tum ❤️",
+      "Meri Khushi",
+      "My Princess",
+      "You Complete Me",
       "I Miss You Babu",
-      "You Own My Heart"
+      "Meri Pagli",
+      "My Sweetheart",
+      "Dil Sirf Tumhara",
+      "Babu Meri Jaan",
+      "Endless Love",
+      "Tum Meri Zindagi Ho",
+      "My One And Only",
+      "Hamesha Tumhara",
+      "You Are My Happiness",
+      "Jaan Se Pyari",
+      "Mera Sukoon",
+      "Love You Chota Don",
+      "Meri Favourite Person",
+      "Babu + Me = Forever",
+      "Made For Each Other",
+      "Meri Dhadkan",
+      "I Choose You Always"
     ];
 
-    // Python heart exact parametric curve
-    // x = 16 * sin(t)^3
-    // y = -(13 * cos(t) - 5 * cos(2t) - 2 * cos(3t) - cos(4t))
-    function getHeartPoint(t, scale) {
-      const x = 16 * Math.pow(Math.sin(t), 3) * scale;
-      const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * scale;
-      return { x, y };
+    const SIZES = [9, 10, 11, 12];
+    let items = [];
+
+    // Heart horizontal span calculation for horizontal text layout
+    function getHeartWidthAtY(yNorm) {
+      // yNorm ranges from -1.3 (bottom point) to +1.1 (top lobes)
+      if (yNorm < -1.3 || yNorm > 1.15) return null;
+      
+      if (yNorm >= 0) {
+        // Upper lobes with dip in middle
+        const r = Math.sqrt(Math.max(0, 1 - Math.pow(Math.abs(yNorm - 0.5) / 0.6, 2)));
+        return { minX: 0.15, maxX: 0.15 + r * 0.95 }; // Symmetric across center
+      } else {
+        // Bottom V-taper
+        const w = (yNorm + 1.3) / 1.3 * 1.1;
+        return { minX: 0, maxX: Math.max(0.05, w) };
+      }
     }
 
-    class TextItem {
-      constructor(text, x, y, order) {
-        this.text = text;
-        this.x = x;
-        this.y = y;
-        this.order = order;
+    function buildLayout() {
+      items = [];
+      const SC = Math.min(width, height) / 4.4;
+      const rows = 26;
+      let pIdx = 0;
+
+      for (let r = 0; r < rows; r++) {
+        const yNorm = 1.05 - (r / (rows - 1)) * 2.25;
+        const yPx = -yNorm * SC;
+        const span = getHeartWidthAtY(yNorm);
+        if (!span) continue;
+
+        const size = SIZES[r % SIZES.length];
+        ctx.font = `bold ${size}px Arial`;
+
+        // Right lobe / right side
+        const rightWidth = span.maxX * SC;
+        let curX = span.minX * SC;
+        while (curX + 45 < rightWidth) {
+          const txt = PHRASES[pIdx % PHRASES.length];
+          pIdx++;
+          const tw = ctx.measureText(txt).width;
+          const posX = curX + tw / 2;
+          const angle = Math.atan2(yPx, posX);
+          items.push({ text: txt, x: posX, y: yPx, size: size, angle: angle, isEdge: (curX === span.minX * SC || curX + tw + 20 >= rightWidth) });
+          curX += tw + 14;
+        }
+
+        // Left lobe / left side
+        curX = -span.minX * SC;
+        while (curX - 45 > -rightWidth) {
+          const txt = PHRASES[pIdx % PHRASES.length];
+          pIdx++;
+          const tw = ctx.measureText(txt).width;
+          const posX = curX - tw / 2;
+          const angle = Math.atan2(yPx, posX);
+          items.push({ text: txt, x: posX, y: yPx, size: size, angle: angle, isEdge: (curX === -span.minX * SC || curX - tw - 20 <= -rightWidth) });
+          curX -= tw + 14;
+        }
       }
 
-      draw(step, beat) {
-        if (step < this.order) return;
+      // Sort order matching Python animation sequence:
+      // 1. Right upper & curve -> 2. Bottom tip -> 3. Left curve -> 4. Center inner fill
+      const edges = items.filter(p => p.isEdge);
+      const inners = items.filter(p => !p.isEdge);
 
-        const posX = width / 2 + this.x * beat;
-        const posY = height / 2 + (this.y - 20) * beat;
+      edges.sort((a, b) => b.angle - a.angle);
+      items = edges.concat(inners);
+    }
+
+    buildLayout();
+
+    let step = 0;
+    let pulseTime = 0;
+
+    function render() {
+      ctx.fillStyle = "#060208";
+      ctx.fillRect(0, 0, width, height);
+
+      if (step < items.length) {
+        step += 0.35; // Reveal speed matching the reel
+      }
+
+      let beat = 1;
+      if (step >= items.length) {
+        pulseTime += 0.045;
+        beat = 1 + Math.sin(pulseTime) * 0.025;
+      }
+
+      const count = Math.min(items.length, Math.floor(step));
+      for (let i = 0; i < count; i++) {
+        const item = items[i];
+        const posX = width / 2 + item.x * beat;
+        const posY = height / 2 + (item.y + 25) * beat;
 
         ctx.save();
-        ctx.font = "bold 9px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        ctx.font = `bold ${item.size}px Arial`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        // Red neon glow shadow
-        ctx.shadowColor = "#ff001a";
+        // Red neon glow
+        ctx.shadowColor = "#ff0022";
         ctx.shadowBlur = 10;
-        ctx.fillStyle = "#ff1f2d";
-        ctx.fillText(this.text, posX, posY);
+        ctx.fillStyle = "#ff1f35";
+        ctx.fillText(item.text, posX, posY);
 
-        // Core text highlights
         ctx.shadowBlur = 0;
-        ctx.fillStyle = "#ff5762";
-        ctx.fillText(this.text, posX, posY);
-
+        ctx.fillStyle = "#ff6170";
+        ctx.fillText(item.text, posX, posY);
         ctx.restore();
       }
+
+      requestAnimationFrame(render);
     }
 
-    let items = [];
-    let totalItems = 0;
-
-    function buildExactHeart() {
-      items = [];
-      const baseScale = Math.min(width, height) / 38;
-
-      // 6 concentric heart rings taaki upper curves aur niche ka pointed v-shape dono perfect rahein
-      const layers = [
-        { scale: baseScale * 1.00, count: 28 },
-        { scale: baseScale * 0.86, count: 24 },
-        { scale: baseScale * 0.72, count: 20 },
-        { scale: baseScale * 0.58, count: 16 },
-        { scale: baseScale * 0.44, count: 12 },
-        { scale: baseScale * 0.28, count: 8 },
-        { scale: baseScale * 0.14, count: 4 }
-      ];
-
-      let phraseIdx = 0;
-      let order = 0;
-
-      layers.forEach(layer => {
-        for (let i = 0; i < layer.count; i++) {
-          const t = (i / layer.count) * Math.PI * 2;
-          const pos = getHeartPoint(t, layer.scale);
-          const txt = phrases[phraseIdx % phrases.length];
-          phraseIdx++;
-
-          items.push(new TextItem(txt, pos.x, pos.y, order));
-          order++;
-        }
-      });
-
-      // Sort by Y coordinate so it draws cleanly from top to bottom
-      items.sort((a, b) => a.y - b.y);
-      for (let i = 0; i < items.length; i++) {
-        items[i].order = i;
-      }
-
-      totalItems = items.length;
-    }
-
-    buildExactHeart();
-
-    let currentStep = 0;
-    let beatTime = 0;
-
-    function animate() {
-      ctx.fillStyle = "#000000";
-      ctx.fillRect(0, 0, width, height);
-
-      // Slow revealing speed: frame by frame steady appearance
-      if (currentStep < totalItems) {
-        currentStep += 0.25;
-      }
-
-      // Heartbeat pulse after full formation
-      let beat = 1;
-      if (currentStep >= totalItems) {
-        beatTime += 0.045;
-        beat = 1 + Math.sin(beatTime) * 0.03;
-      }
-
-      for (let i = 0; i < items.length; i++) {
-        items[i].draw(currentStep, beat);
-      }
-
-      requestAnimationFrame(animate);
-    }
-
-    animate();
+    render();
   </script>
 </body>
 </html>
