@@ -1,197 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Love Heart Animation</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Love ❤️</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+}
+
+.scene {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    perspective: 1000px;
+}
+
+.heart {
+    position: relative;
+    width: 360px;
+    height: 330px;
+    transform-style: preserve-3d;
+    animation: heartbeat 2s infinite ease-in-out,
+               rotateHeart 12s infinite ease-in-out;
+}
+
+.word {
+    position: absolute;
+    color: #ff3028;
+    font-weight: bold;
+    white-space: nowrap;
+    text-align: center;
+    text-shadow:
+        0 0 5px #ff1717,
+        0 0 10px #ff0808,
+        0 0 20px rgba(255, 0, 0, 0.7);
+    animation: glow 2s infinite alternate;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes heartbeat {
+    0%, 100% { scale: 1; }
+    25% { scale: 1.04; }
+    40% { scale: 0.99; }
+    60% { scale: 1.06; }
+}
+
+@keyframes rotateHeart {
+    0%, 100% { transform: rotateY(-10deg) rotateX(4deg); }
+    50% { transform: rotateY(10deg) rotateX(-4deg); }
+}
+
+@keyframes glow {
+    from {
+        opacity: 0.7;
+        text-shadow: 0 0 5px #ff1717, 0 0 10px #ff0000;
     }
-    body {
-      background: #060208;
-      overflow: hidden;
-      height: 100vh;
-      width: 100vw;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    to {
+        opacity: 1;
+        text-shadow: 0 0 8px #ff2222, 0 0 20px #ff0000;
     }
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+}
+
+.title {
+    position: fixed;
+    bottom: 25px;
+    width: 100%;
+    text-align: center;
+    color: #ff4545;
+    font-size: 15px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px red;
+}
+
+@media (max-width: 500px) {
+    .heart {
+        transform: scale(0.85);
     }
-  </style>
+
+    .title {
+        font-size: 12px;
+    }
+}
+</style>
 </head>
+
 <body>
-  <canvas id="heartCanvas"></canvas>
 
-  <script>
-    const canvas = document.getElementById("heartCanvas");
-    const ctx = canvas.getContext("2d");
+<div class="scene">
+    <div class="heart" id="heart"></div>
+</div>
 
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
+<div class="title">❤️ FOREVER AND ALWAYS ❤️</div>
 
-    window.addEventListener("resize", () => {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-      buildLayout();
-    });
+<script>
+const heart = document.getElementById("heart");
 
-    // Exact video phrases
-    const PHRASES = [
-      "I love you Babu ❤️",
-      "My Babu",
-      "Meri Jaan",
-      "Mera Pyaara Babu",
-      "My Cute Don",
-      "My Heart is Yours",
-      "Sirf Tum ❤️",
-      "Meri Khushi",
-      "My Princess",
-      "You Complete Me",
-      "I Miss You Babu",
-      "Meri Pagli",
-      "My Sweetheart",
-      "Dil Sirf Tumhara",
-      "Babu Meri Jaan",
-      "Endless Love",
-      "Tum Meri Zindagi Ho",
-      "My One And Only",
-      "Hamesha Tumhara",
-      "You Are My Happiness",
-      "Jaan Se Pyari",
-      "Mera Sukoon",
-      "Love You Chota Don",
-      "Meri Favourite Person",
-      "Babu + Me = Forever",
-      "Made For Each Other",
-      "Meri Dhadkan",
-      "I Choose You Always"
-    ];
+const messages = [
+    "My Princess",
+    "My Beautiful Babu",
+    "Meri Jaan ❤️",
+    "My Cute Don",
+    "You Are My Happiness",
+    "Mera Sukoon",
+    "I Love You Babu ❤️",
+    "My Sweetheart",
+    "Meri Khushi",
+    "My Favourite Person",
+    "Forever And Always",
+    "My One And Only",
+    "Meri Duniya",
+    "Sift Tum ❤️",
+    "You Are My Everything",
+    "Mera Pyaara Babu",
+    "Meri Dh adkan",
+    "Chota Don ❤️",
+    "Endless Love",
+    "My Babu",
+    "Only You Babu",
+    "Tum Meri Zindagi Ho",
+    "Mera Sab Kuch",
+    "I Miss You Babu",
+    "My Love ❤️",
+    "Jaan Se Pyari",
+    "Meri Pagli",
+    "You Complete Me",
+    "My Everything",
+    "Forever My Love",
+    "My Happiness",
+    "Love You Chota Don",
+    "Meri Favourite",
+    "Hamesha Tumhara",
+    "My Princess ❤️",
+    "Babu Meri Duniya",
+    "I Choose You",
+    "You Own My Heart",
+    "Mera Bachha ❤️",
+    "Meri Jaan",
+    "My Sunshine",
+    "Endless Together",
+    "My Soulmate",
+    "Only Mine ❤️",
+    "My Forever"
+];
 
-    const SIZES = [9, 10, 11, 12];
-    let items = [];
+// Heart equation creates a heart-shaped outline and filled interior.
+function heartPoint(t, scale = 1) {
+    const x = 16 * Math.pow(Math.sin(t), 3);
+    const y = 13 * Math.cos(t)
+            - 5 * Math.cos(2 * t)
+            - 2 * Math.cos(3 * t)
+            - Math.cos(4 * t);
 
-    // Heart horizontal span calculation for horizontal text layout
-    function getHeartWidthAtY(yNorm) {
-      // yNorm ranges from -1.3 (bottom point) to +1.1 (top lobes)
-      if (yNorm < -1.3 || yNorm > 1.15) return null;
-      
-      if (yNorm >= 0) {
-        // Upper lobes with dip in middle
-        const r = Math.sqrt(Math.max(0, 1 - Math.pow(Math.abs(yNorm - 0.5) / 0.6, 2)));
-        return { minX: 0.15, maxX: 0.15 + r * 0.95 }; // Symmetric across center
-      } else {
-        // Bottom V-taper
-        const w = (yNorm + 1.3) / 1.3 * 1.1;
-        return { minX: 0, maxX: Math.max(0.05, w) };
-      }
-    }
+    return {
+        x: x * scale,
+        y: -y * scale
+    };
+}
 
-    function buildLayout() {
-      items = [];
-      const SC = Math.min(width, height) / 4.4;
-      const rows = 26;
-      let pIdx = 0;
+const points = [];
 
-      for (let r = 0; r < rows; r++) {
-        const yNorm = 1.05 - (r / (rows - 1)) * 2.25;
-        const yPx = -yNorm * SC;
-        const span = getHeartWidthAtY(yNorm);
-        if (!span) continue;
+// Fill the heart with points.
+for (let i = 0; i < 150; i++) {
+    const t = Math.random() * Math.PI * 2;
+    const scale = Math.sqrt(Math.random());
+    points.push(heartPoint(t, scale));
+}
 
-        const size = SIZES[r % SIZES.length];
-        ctx.font = `bold ${size}px Arial`;
+// Sort by height to create a recognizable heart.
+points.sort((a, b) => a.y - b.y);
 
-        // Right lobe / right side
-        const rightWidth = span.maxX * SC;
-        let curX = span.minX * SC;
-        while (curX + 45 < rightWidth) {
-          const txt = PHRASES[pIdx % PHRASES.length];
-          pIdx++;
-          const tw = ctx.measureText(txt).width;
-          const posX = curX + tw / 2;
-          const angle = Math.atan2(yPx, posX);
-          items.push({ text: txt, x: posX, y: yPx, size: size, angle: angle, isEdge: (curX === span.minX * SC || curX + tw + 20 >= rightWidth) });
-          curX += tw + 14;
-        }
+points.forEach((point, i) => {
+    const span = document.createElement("span");
+    span.className = "word";
+    span.textContent = messages[i % messages.length];
 
-        // Left lobe / left side
-        curX = -span.minX * SC;
-        while (curX - 45 > -rightWidth) {
-          const txt = PHRASES[pIdx % PHRASES.length];
-          pIdx++;
-          const tw = ctx.measureText(txt).width;
-          const posX = curX - tw / 2;
-          const angle = Math.atan2(yPx, posX);
-          items.push({ text: txt, x: posX, y: yPx, size: size, angle: angle, isEdge: (curX === -span.minX * SC || curX - tw - 20 <= -rightWidth) });
-          curX -= tw + 14;
-        }
-      }
+    const x = 180 + point.x * 8.3;
+    const y = 145 + point.y * 8.3;
 
-      // Sort order matching Python animation sequence:
-      // 1. Right upper & curve -> 2. Bottom tip -> 3. Left curve -> 4. Center inner fill
-      const edges = items.filter(p => p.isEdge);
-      const inners = items.filter(p => !p.isEdge);
+    span.style.left = x + "px";
+    span.style.top = y + "px";
+    span.style.fontSize = (9 + Math.random() * 4) + "px";
+    span.style.animationDelay = (Math.random() * 2) + "s";
 
-      edges.sort((a, b) => b.angle - a.angle);
-      items = edges.concat(inners);
-    }
+    // Depth effect
+    span.style.transform =
+        `translate(-50%, -50%) translateZ(${Math.random() * 35}px)`;
 
-    buildLayout();
+    heart.appendChild(span);
+});
 
-    let step = 0;
-    let pulseTime = 0;
+// Add a few larger romantic messages.
+const highlights = [
+    { text: "I Love You Babu ❤️", x: 180, y: 145, size: 14 },
+    { text: "My Beautiful Babu", x: 180, y: 175, size: 13 },
+    { text: "Forever And Always", x: 180, y: 205, size: 12 },
+    { text: "My Princess ❤️", x: 180, y: 235, size: 12 }
+];
 
-    function render() {
-      ctx.fillStyle = "#060208";
-      ctx.fillRect(0, 0, width, height);
+highlights.forEach(item => {
+    const span = document.createElement("span");
+    span.className = "word";
+    span.textContent = item.text;
+    span.style.left = item.x + "px";
+    span.style.top = item.y + "px";
+    span.style.fontSize = item.size + "px";
+    span.style.color = "#ff514a";
+    span.style.zIndex = "10";
+    heart.appendChild(span);
+});
+</script>
 
-      if (step < items.length) {
-        step += 0.35; // Reveal speed matching the reel
-      }
-
-      let beat = 1;
-      if (step >= items.length) {
-        pulseTime += 0.045;
-        beat = 1 + Math.sin(pulseTime) * 0.025;
-      }
-
-      const count = Math.min(items.length, Math.floor(step));
-      for (let i = 0; i < count; i++) {
-        const item = items[i];
-        const posX = width / 2 + item.x * beat;
-        const posY = height / 2 + (item.y + 25) * beat;
-
-        ctx.save();
-        ctx.font = `bold ${item.size}px Arial`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-
-        // Red neon glow
-        ctx.shadowColor = "#ff0022";
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = "#ff1f35";
-        ctx.fillText(item.text, posX, posY);
-
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = "#ff6170";
-        ctx.fillText(item.text, posX, posY);
-        ctx.restore();
-      }
-
-      requestAnimationFrame(render);
-    }
-
-    render();
-  </script>
 </body>
 </html>
