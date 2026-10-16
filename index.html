@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Multilingual Glowing Heart ❤️</title>
+  <title>Letter Star Heart Animation</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", sans-serif;
     }
     body {
-      background: #050508;
+      background: #040407;
       overflow: hidden;
       height: 100vh;
       width: 100vw;
@@ -42,126 +42,148 @@
     window.addEventListener("resize", () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
-      initParticles();
+      buildHeart();
     });
 
-    // 12 alag-alag languages me "I Love You"
-    const loveQuotes = [
-      "I Love You",           // English
-      "मैं तुमसे प्यार करता हूँ",    // Hindi
-      "Je t'aime",            // French
-      "Te amo",               // Spanish
-      "愛してる",               // Japanese (Aishiteru)
-      "사랑해",                // Korean (Saranghae)
-      "Ti amo",               // Italian
-      "Ich liebe dich",       // German
-      "Я люблю тебя",         // Russian
-      "أحبك",                 // Arabic
-      "আমি তোমায় ভালোবাসি",    // Bengali
-      "我爱你"                 // Chinese (Wo ai ni)
+    // 12 alag-alag bhashaon ke prem vakya
+    const sentences = [
+      "I LOVE YOU",
+      "MAIN TUMSE PYAAR KARTA HOON",
+      "JE T AIME",
+      "TE AMO",
+      "TI AMO",
+      "ICH LIEBE DICH",
+      "AISHITERU",
+      "SARANGHAE",
+      "YA TEBYA LYUBLYU",
+      "UHEBBUKA",
+      "AMI TOMAKE BHALOBASHI",
+      "WO AI NI"
     ];
 
-    // Math formula for Heart curve
+    // Saare characters ko ek long continuous stream me convert karna
+    const charStream = sentences.join(" • ").split("");
+
     function getHeartPoint(t, scale) {
       const x = 16 * Math.pow(Math.sin(t), 3);
       const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
       return { x: x * scale, y: y * scale };
     }
 
-    class TextParticle {
-      constructor(text, t, layerScale, fontSize) {
-        this.text = text;
-        this.t = t;
-        this.layerScale = layerScale;
-        this.fontSize = fontSize;
-        this.color = [
-          "#ff2a6d", "#ff5c8a", "#ff758f", "#ff8fa3", "#ffb3c1", "#ff4d6d", "#ffffff"
-        ][Math.floor(Math.random() * 7)];
-        this.speed = (Math.random() * 0.003 + 0.002) * (Math.random() > 0.5 ? 1 : -1);
+    class LetterNode {
+      constructor(char, x, y, delay) {
+        this.char = char;
+        this.baseX = x;
+        this.baseY = y;
+        this.delay = delay;
+        this.revealed = false;
+
+        // Twinkle (star spark) properties
+        this.twinklePhase = Math.random() * Math.PI * 2;
+        this.twinkleSpeed = 0.04 + Math.random() * 0.05;
+        this.baseColor = Math.random() > 0.4 ? "#ff4370" : "#ffffff";
+        this.glowIntensity = 6 + Math.random() * 12;
       }
 
-      update() {
-        this.t += this.speed;
-        if (this.t > Math.PI * 2) this.t -= Math.PI * 2;
-        if (this.t < 0) this.t += Math.PI * 2;
+      update(frame) {
+        if (frame >= this.delay) {
+          this.revealed = true;
+        }
+        this.twinklePhase += this.twinkleSpeed;
       }
 
-      draw(beat) {
-        const pt = getHeartPoint(this.t, this.layerScale * beat);
-        const posX = width / 2 + pt.x;
-        const posY = height / 2 + pt.y;
+      draw(beat, allFormed) {
+        if (!this.revealed) return;
+
+        // Pulse position with heartbeat
+        const posX = width / 2 + this.baseX * beat;
+        const posY = height / 2 + this.baseY * beat;
+
+        // Star twinkling brightness
+        let alpha = 0.85;
+        let glow = this.glowIntensity;
+
+        if (allFormed) {
+          const spark = Math.sin(this.twinklePhase);
+          alpha = 0.4 + (spark + 1) * 0.3; // 0.4 se 1.0 ke beech shine
+          glow = 4 + (spark + 1) * 10;
+        }
 
         ctx.save();
-        ctx.translate(posX, posY);
-        
-        ctx.font = `600 ${this.fontSize}px 'Segoe UI', sans-serif`;
-        ctx.fillStyle = this.color;
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = "#ff2a6d";
+        ctx.font = "bold 9px monospace";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(this.text, 0, 0);
+        ctx.fillStyle = this.baseColor;
+        ctx.globalAlpha = alpha;
+        ctx.shadowColor = "#ff2a6d";
+        ctx.shadowBlur = glow;
+        ctx.fillText(this.char, posX, posY);
         ctx.restore();
       }
     }
 
-    let particles = [];
+    let nodes = [];
+    let frameCount = 0;
+    let totalNodes = 0;
 
-    function initParticles() {
-      particles = [];
-      const baseScale = Math.min(width, height) / 38; // Screen ke hisab se responsive scale
+    function buildHeart() {
+      nodes = [];
+      frameCount = 0;
 
-      // Outer Layer - Phrases
-      const outerCount = 45;
-      for (let i = 0; i < outerCount; i++) {
-        const t = (i / outerCount) * Math.PI * 2;
-        const quote = loveQuotes[i % loveQuotes.length];
-        particles.push(new TextParticle(quote, t, baseScale, 13));
-      }
+      // Screen size ke mutabik bada scale
+      const heartScale = Math.min(width, height) / 30;
 
-      // Middle Layer - Multi-language words
-      const midCount = 35;
-      for (let i = 0; i < midCount; i++) {
-        const t = (i / midCount) * Math.PI * 2 + 0.1;
-        const quote = loveQuotes[(i * 3) % loveQuotes.length];
-        particles.push(new TextParticle(quote, t, baseScale * 0.72, 11));
-      }
+      // Multi-layer structure (Bada heart + Dense fill)
+      const layers = [
+        { scale: heartScale * 1.00, count: 280 }, // Outer edge
+        { scale: heartScale * 0.88, count: 220 }, // 2nd edge
+        { scale: heartScale * 0.74, count: 180 }, // Mid layer
+        { scale: heartScale * 0.58, count: 140 }, // Inner ring
+        { scale: heartScale * 0.40, count: 90 }   // Deep core
+      ];
 
-      // Inner Layer - Tiny glowing sparks
-      const innerCount = 20;
-      for (let i = 0; i < innerCount; i++) {
-        const t = (i / innerCount) * Math.PI * 2;
-        particles.push(new TextParticle("❤️", t, baseScale * 0.45, 12));
-      }
-    }
+      let streamIdx = 0;
+      let stepCounter = 0;
 
-    initParticles();
+      layers.forEach((layer) => {
+        for (let i = 0; i < layer.count; i++) {
+          const t = (i / layer.count) * Math.PI * 2;
+          const pt = getHeartPoint(t, layer.scale);
+          const ch = charStream[streamIdx % charStream.length];
+          streamIdx++;
 
-    let angle = 0;
-    function animate() {
-      // Trail effect
-      ctx.fillStyle = "rgba(5, 5, 8, 0.35)";
-      ctx.fillRect(0, 0, width, height);
-
-      // Heartbeat pulse calculation
-      angle += 0.05;
-      const beat = 1 + Math.sin(angle) * 0.07;
-
-      particles.forEach((p) => {
-        p.update();
-        p.draw(beat);
+          // Har ek letter ko thoda delay dekar sequential reveal karna
+          nodes.push(new LetterNode(ch, pt.x, pt.y, stepCounter));
+          stepCounter += 0.8;
+        }
       });
 
-      // Center glowing heart pulse
-      ctx.save();
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.font = `bold ${24 * beat}px 'Segoe UI', sans-serif`;
-      ctx.fillStyle = "#ffffff";
-      ctx.shadowBlur = 20;
-      ctx.shadowColor = "#ff0055";
-      ctx.fillText("Forever & Always", width / 2, height / 2);
-      ctx.restore();
+      totalNodes = nodes.length;
+    }
+
+    buildHeart();
+
+    let heartbeatAngle = 0;
+
+    function animate() {
+      // Clear canvas with deep dark trace
+      ctx.fillStyle = "#040407";
+      ctx.fillRect(0, 0, width, height);
+
+      frameCount += 1.5;
+      const allFormed = frameCount > totalNodes * 0.8;
+
+      // Heartbeat pulse calculation
+      let beat = 1;
+      if (allFormed) {
+        heartbeatAngle += 0.045;
+        beat = 1 + Math.sin(heartbeatAngle) * 0.035;
+      }
+
+      for (let i = 0; i < nodes.length; i++) {
+        nodes[i].update(frameCount);
+        nodes[i].draw(beat, allFormed);
+      }
 
       requestAnimationFrame(animate);
     }
