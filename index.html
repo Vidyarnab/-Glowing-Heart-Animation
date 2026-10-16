@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Letter Star Heart Animation</title>
+  <title>Viral Star Heart Animation</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+      font-family: 'Courier New', Courier, monospace;
     }
     body {
-      background: #040407;
+      background: #000002;
       overflow: hidden;
       height: 100vh;
       width: 100vw;
@@ -42,14 +42,13 @@
     window.addEventListener("resize", () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
-      buildHeart();
+      buildHeartMap();
     });
 
-    // 12 alag-alag bhashaon ke prem vakya
-    const sentences = [
+    const lovePhrases = [
       "I LOVE YOU",
-      "MAIN TUMSE PYAAR KARTA HOON",
-      "JE T AIME",
+      "MAIN TUMSE PYAR KARTA HOON",
+      "JE T'AIME",
       "TE AMO",
       "TI AMO",
       "ICH LIEBE DICH",
@@ -61,128 +60,139 @@
       "WO AI NI"
     ];
 
-    // Saare characters ko ek long continuous stream me convert karna
-    const charStream = sentences.join(" • ").split("");
+    // Combine all phrases into one continuous string
+    const fullTextStream = lovePhrases.join("   ").toUpperCase();
 
+    // Heart mathematical formula
     function getHeartPoint(t, scale) {
       const x = 16 * Math.pow(Math.sin(t), 3);
       const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
       return { x: x * scale, y: y * scale };
     }
 
-    class LetterNode {
-      constructor(char, x, y, delay) {
+    class LetterPoint {
+      constructor(char, x, y, order) {
         this.char = char;
-        this.baseX = x;
-        this.baseY = y;
-        this.delay = delay;
-        this.revealed = false;
+        this.x = x;
+        this.y = y;
+        this.order = order;
+        this.visible = false;
 
-        // Twinkle (star spark) properties
+        // Individual star twinkling setup
         this.twinklePhase = Math.random() * Math.PI * 2;
-        this.twinkleSpeed = 0.04 + Math.random() * 0.05;
-        this.baseColor = Math.random() > 0.4 ? "#ff4370" : "#ffffff";
-        this.glowIntensity = 6 + Math.random() * 12;
+        this.twinkleSpeed = 0.03 + Math.random() * 0.05;
+        this.isSparkleWhite = Math.random() < 0.25;
       }
 
-      update(frame) {
-        if (frame >= this.delay) {
-          this.revealed = true;
+      update(currentCount) {
+        if (currentCount >= this.order) {
+          this.visible = true;
         }
         this.twinklePhase += this.twinkleSpeed;
       }
 
-      draw(beat, allFormed) {
-        if (!this.revealed) return;
+      draw(beat, isComplete) {
+        if (!this.visible) return;
 
-        // Pulse position with heartbeat
-        const posX = width / 2 + this.baseX * beat;
-        const posY = height / 2 + this.baseY * beat;
+        // Gentle pulse anchored at screen center
+        const drawX = width / 2 + this.x * beat;
+        const drawY = height / 2 + this.y * beat;
 
-        // Star twinkling brightness
         let alpha = 0.85;
-        let glow = this.glowIntensity;
+        let shadowBlur = 4;
+        let color = "#ff2a6d";
 
-        if (allFormed) {
-          const spark = Math.sin(this.twinklePhase);
-          alpha = 0.4 + (spark + 1) * 0.3; // 0.4 se 1.0 ke beech shine
-          glow = 4 + (spark + 1) * 10;
+        if (isComplete) {
+          const sine = Math.sin(this.twinklePhase);
+          alpha = 0.25 + (sine + 1) * 0.35; // Twinkle brightness range
+          shadowBlur = 3 + (sine + 1) * 6;
+
+          if (this.isSparkleWhite && sine > 0.6) {
+            color = "#ffffff";
+            shadowBlur = 10;
+          }
         }
 
         ctx.save();
-        ctx.font = "bold 9px monospace";
+        ctx.font = "bold 8px monospace";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillStyle = this.baseColor;
+        ctx.fillStyle = color;
         ctx.globalAlpha = alpha;
         ctx.shadowColor = "#ff2a6d";
-        ctx.shadowBlur = glow;
-        ctx.fillText(this.char, posX, posY);
+        ctx.shadowBlur = shadowBlur;
+        ctx.fillText(this.char, drawX, drawY);
         ctx.restore();
       }
     }
 
-    let nodes = [];
-    let frameCount = 0;
-    let totalNodes = 0;
+    let points = [];
+    let lettersDrawn = 0;
+    let totalTargetLetters = 0;
 
-    function buildHeart() {
-      nodes = [];
-      frameCount = 0;
+    function buildHeartMap() {
+      points = [];
+      lettersDrawn = 0;
 
-      // Screen size ke mutabik bada scale
-      const heartScale = Math.min(width, height) / 30;
+      // Scale to make the heart large on any device screen
+      const scale = Math.min(width, height) / 28;
 
-      // Multi-layer structure (Bada heart + Dense fill)
-      const layers = [
-        { scale: heartScale * 1.00, count: 280 }, // Outer edge
-        { scale: heartScale * 0.88, count: 220 }, // 2nd edge
-        { scale: heartScale * 0.74, count: 180 }, // Mid layer
-        { scale: heartScale * 0.58, count: 140 }, // Inner ring
-        { scale: heartScale * 0.40, count: 90 }   // Deep core
+      // Multiple dense layers from outer border to inner core
+      const densityLayers = [
+        { scale: scale * 1.00, count: 260 },
+        { scale: scale * 0.90, count: 220 },
+        { scale: scale * 0.80, count: 180 },
+        { scale: scale * 0.70, count: 150 },
+        { scale: scale * 0.60, count: 120 },
+        { scale: scale * 0.48, count: 90 },
+        { scale: scale * 0.35, count: 60 }
       ];
 
-      let streamIdx = 0;
-      let stepCounter = 0;
+      let charIndex = 0;
+      let orderIndex = 0;
 
-      layers.forEach((layer) => {
+      densityLayers.forEach((layer) => {
         for (let i = 0; i < layer.count; i++) {
           const t = (i / layer.count) * Math.PI * 2;
-          const pt = getHeartPoint(t, layer.scale);
-          const ch = charStream[streamIdx % charStream.length];
-          streamIdx++;
+          const pos = getHeartPoint(t, layer.scale);
+          const char = fullTextStream[charIndex % fullTextStream.length];
+          charIndex++;
 
-          // Har ek letter ko thoda delay dekar sequential reveal karna
-          nodes.push(new LetterNode(ch, pt.x, pt.y, stepCounter));
-          stepCounter += 0.8;
+          // Store point
+          points.push(new LetterPoint(char, pos.x, pos.y, orderIndex));
+          orderIndex++;
         }
       });
 
-      totalNodes = nodes.length;
+      totalTargetLetters = points.length;
     }
 
-    buildHeart();
+    buildHeartMap();
 
-    let heartbeatAngle = 0;
+    let beatPhase = 0;
 
     function animate() {
-      // Clear canvas with deep dark trace
-      ctx.fillStyle = "#040407";
+      // Clear black screen
+      ctx.fillStyle = "#000002";
       ctx.fillRect(0, 0, width, height);
 
-      frameCount += 1.5;
-      const allFormed = frameCount > totalNodes * 0.8;
-
-      // Heartbeat pulse calculation
-      let beat = 1;
-      if (allFormed) {
-        heartbeatAngle += 0.045;
-        beat = 1 + Math.sin(heartbeatAngle) * 0.035;
+      // Revealing letters step by step
+      if (lettersDrawn < totalTargetLetters) {
+        lettersDrawn += 2; // Revealing speed
       }
 
-      for (let i = 0; i < nodes.length; i++) {
-        nodes[i].update(frameCount);
-        nodes[i].draw(beat, allFormed);
+      const isComplete = lettersDrawn >= totalTargetLetters;
+
+      // Heartbeat pulse only after full shape is drawn
+      let beat = 1;
+      if (isComplete) {
+        beatPhase += 0.04;
+        beat = 1 + Math.sin(beatPhase) * 0.025;
+      }
+
+      for (let i = 0; i < points.length; i++) {
+        points[i].update(lettersDrawn);
+        points[i].draw(beat, isComplete);
       }
 
       requestAnimationFrame(animate);
