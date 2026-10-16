@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Custom Letter Heart Animation</title>
+  <title>Multilingual Glowing Heart ❤️</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     body {
-      background: #08080c;
+      background: #050508;
       overflow: hidden;
       height: 100vh;
+      width: 100vw;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
     }
     canvas {
       position: absolute;
@@ -26,177 +26,147 @@
       left: 0;
       width: 100%;
       height: 100%;
-      z-index: 1;
-    }
-    .input-box {
-      position: relative;
-      z-index: 10;
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(12px);
-      padding: 24px;
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      text-align: center;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      transition: opacity 0.5s ease;
-    }
-    .input-box input {
-      padding: 12px 18px;
-      border-radius: 25px;
-      border: 1px solid #ff4d6d;
-      outline: none;
-      background: rgba(0, 0, 0, 0.5);
-      color: #fff;
-      font-size: 16px;
-      width: 240px;
-      text-align: center;
-    }
-    .input-box button {
-      display: block;
-      margin: 15px auto 0;
-      padding: 10px 24px;
-      border: none;
-      border-radius: 25px;
-      background: linear-gradient(45deg, #ff4d6d, #c9184a);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 4px 15px rgba(255, 77, 109, 0.4);
-      transition: transform 0.2s;
-    }
-    .input-box button:active {
-      transform: scale(0.95);
-    }
-    #reset-btn {
-      position: fixed;
-      bottom: 25px;
-      z-index: 10;
-      display: none;
-      padding: 8px 18px;
-      background: rgba(255,255,255,0.1);
-      color: #ffb3c1;
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 20px;
-      font-size: 13px;
-      cursor: pointer;
     }
   </style>
 </head>
 <body>
-
-  <!-- Input Card -->
-  <div class="input-box" id="inputContainer">
-    <input type="text" id="userInput" placeholder="Type your text or feelings..." maxlength="30" value="I LOVE YOU">
-    <button id="startBtn">Make Heart ❤️</button>
-  </div>
-
-  <button id="reset-btn" onclick="resetAnimation()">Type Again ↺</button>
   <canvas id="heartCanvas"></canvas>
 
   <script>
     const canvas = document.getElementById("heartCanvas");
     const ctx = canvas.getContext("2d");
+
     let width = canvas.width = window.innerWidth;
     let height = canvas.height = window.innerHeight;
 
     window.addEventListener("resize", () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
+      initParticles();
     });
 
-    let particles = [];
-    let isFormed = false;
-    let angle = 0;
+    // 12 alag-alag languages me "I Love You"
+    const loveQuotes = [
+      "I Love You",           // English
+      "मैं तुमसे प्यार करता हूँ",    // Hindi
+      "Je t'aime",            // French
+      "Te amo",               // Spanish
+      "愛してる",               // Japanese (Aishiteru)
+      "사랑해",                // Korean (Saranghae)
+      "Ti amo",               // Italian
+      "Ich liebe dich",       // German
+      "Я люблю тебя",         // Russian
+      "أحبك",                 // Arabic
+      "আমি তোমায় ভালোবাসি",    // Bengali
+      "我爱你"                 // Chinese (Wo ai ni)
+    ];
 
-    // Heart Shape Mathematical Formula
-    function getHeartPoint(t, scale = 14) {
+    // Math formula for Heart curve
+    function getHeartPoint(t, scale) {
       const x = 16 * Math.pow(Math.sin(t), 3);
       const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
       return { x: x * scale, y: y * scale };
     }
 
-    class LetterParticle {
-      constructor(char, targetX, targetY) {
-        this.char = char;
-        this.targetX = targetX;
-        this.targetY = targetY;
-        // Start randomly on screen
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 5;
-        this.vy = (Math.random() - 0.5) * 5;
-        this.size = Math.random() * 4 + 13;
-        this.color = ["#ff4d6d", "#ff758f", "#ff8fa3", "#ffb3c1", "#fff"][Math.floor(Math.random() * 5)];
+    class TextParticle {
+      constructor(text, t, layerScale, fontSize) {
+        this.text = text;
+        this.t = t;
+        this.layerScale = layerScale;
+        this.fontSize = fontSize;
+        this.color = [
+          "#ff2a6d", "#ff5c8a", "#ff758f", "#ff8fa3", "#ffb3c1", "#ff4d6d", "#ffffff"
+        ][Math.floor(Math.random() * 7)];
+        this.speed = (Math.random() * 0.003 + 0.002) * (Math.random() > 0.5 ? 1 : -1);
       }
 
-      update(beat) {
-        const destX = width / 2 + this.targetX * beat;
-        const destY = height / 2 + this.targetY * beat;
-
-        // Move towards heart coordinates smoothly
-        this.x += (destX - this.x) * 0.05;
-        this.y += (destY - this.y) * 0.05;
+      update() {
+        this.t += this.speed;
+        if (this.t > Math.PI * 2) this.t -= Math.PI * 2;
+        if (this.t < 0) this.t += Math.PI * 2;
       }
 
-      draw() {
-        ctx.font = `bold ${this.size}px monospace`;
+      draw(beat) {
+        const pt = getHeartPoint(this.t, this.layerScale * beat);
+        const posX = width / 2 + pt.x;
+        const posY = height / 2 + pt.y;
+
+        ctx.save();
+        ctx.translate(posX, posY);
+        
+        ctx.font = `600 ${this.fontSize}px 'Segoe UI', sans-serif`;
         ctx.fillStyle = this.color;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = "#ff4d6d";
-        ctx.fillText(this.char, this.x, this.y);
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = "#ff2a6d";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(this.text, 0, 0);
+        ctx.restore();
       }
     }
 
-    function createLetterHeart(text) {
+    let particles = [];
+
+    function initParticles() {
       particles = [];
-      const cleanText = text.trim() || "LOVE";
-      const totalPoints = 140; // Number of letters forming the heart
+      const baseScale = Math.min(width, height) / 38; // Screen ke hisab se responsive scale
 
-      for (let i = 0; i < totalPoints; i++) {
-        const t = (i / totalPoints) * Math.PI * 2;
-        const pt = getHeartPoint(t, 13);
-        const char = cleanText[i % cleanText.length];
-        particles.push(new LetterParticle(char, pt.x, pt.y));
+      // Outer Layer - Phrases
+      const outerCount = 45;
+      for (let i = 0; i < outerCount; i++) {
+        const t = (i / outerCount) * Math.PI * 2;
+        const quote = loveQuotes[i % loveQuotes.length];
+        particles.push(new TextParticle(quote, t, baseScale, 13));
+      }
+
+      // Middle Layer - Multi-language words
+      const midCount = 35;
+      for (let i = 0; i < midCount; i++) {
+        const t = (i / midCount) * Math.PI * 2 + 0.1;
+        const quote = loveQuotes[(i * 3) % loveQuotes.length];
+        particles.push(new TextParticle(quote, t, baseScale * 0.72, 11));
+      }
+
+      // Inner Layer - Tiny glowing sparks
+      const innerCount = 20;
+      for (let i = 0; i < innerCount; i++) {
+        const t = (i / innerCount) * Math.PI * 2;
+        particles.push(new TextParticle("❤️", t, baseScale * 0.45, 12));
       }
     }
 
+    initParticles();
+
+    let angle = 0;
     function animate() {
-      ctx.fillStyle = "rgba(8, 8, 12, 0.25)";
+      // Trail effect
+      ctx.fillStyle = "rgba(5, 5, 8, 0.35)";
       ctx.fillRect(0, 0, width, height);
 
-      if (isFormed) {
-        angle += 0.05;
-        const beat = 1 + Math.sin(angle) * 0.08; // Heartbeat pulsing
+      // Heartbeat pulse calculation
+      angle += 0.05;
+      const beat = 1 + Math.sin(angle) * 0.07;
 
-        particles.forEach(p => {
-          p.update(beat);
-          p.draw();
-        });
-      }
+      particles.forEach((p) => {
+        p.update();
+        p.draw(beat);
+      });
+
+      // Center glowing heart pulse
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = `bold ${24 * beat}px 'Segoe UI', sans-serif`;
+      ctx.fillStyle = "#ffffff";
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = "#ff0055";
+      ctx.fillText("Forever & Always", width / 2, height / 2);
+      ctx.restore();
+
       requestAnimationFrame(animate);
     }
+
     animate();
-
-    const startBtn = document.getElementById("startBtn");
-    const inputContainer = document.getElementById("inputContainer");
-    const userInput = document.getElementById("userInput");
-    const resetBtn = document.getElementById("reset-btn");
-
-    startBtn.addEventListener("click", () => {
-      const val = userInput.value;
-      inputContainer.style.display = "none";
-      resetBtn.style.display = "block";
-      createLetterHeart(val);
-      isFormed = true;
-    });
-
-    function resetAnimation() {
-      isFormed = false;
-      ctx.clearRect(0, 0, width, height);
-      inputContainer.style.display = "block";
-      resetBtn.style.display = "none";
-    }
   </script>
 </body>
 </html>
